@@ -1,6 +1,5 @@
 //
 //  BBLabelStyleLibrary.h
-//  TV Forecast for iPad
 //
 //  Created by Matt Comi on 15/04/11.
 //  Copyright 2011 Big Bucket Software. All rights reserved.
@@ -10,6 +9,7 @@
 
 #import "BBLabelStyle.h"
 
+// A shared library of BBLabelStyles.
 @interface BBLabelStyleLibrary : NSObject
 {
 @private
