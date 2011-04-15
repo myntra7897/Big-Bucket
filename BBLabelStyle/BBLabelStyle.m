@@ -67,7 +67,14 @@ NSString* const BBLabelStyleShadowOffsetKey = @"BBShadowOffsetKey";
 
 -(void)setBackgroundColor:(UIColor*)backgroundColor
 {
-    [m_properties setObject:backgroundColor forKey:BBLabelStyleBackgroundColorKey];
+    if (!backgroundColor)
+    {
+        [m_properties removeObjectForKey:BBLabelStyleBackgroundColorKey];
+    }
+    else
+    {
+        [m_properties setObject:backgroundColor forKey:BBLabelStyleBackgroundColorKey];
+    }
 }
 
 -(UIFont*)font
@@ -79,7 +86,7 @@ NSString* const BBLabelStyleShadowOffsetKey = @"BBShadowOffsetKey";
 {
     if (!font)
     {
-        [m_properties removeObjectForKey:font];
+        [m_properties removeObjectForKey:BBLabelStyleFontKey];
     }
     else
     {
@@ -94,7 +101,14 @@ NSString* const BBLabelStyleShadowOffsetKey = @"BBShadowOffsetKey";
 
 -(void)setTextColor:(UIColor*)textColor
 {
-    [m_properties setObject:textColor forKey:BBLabelStyleTextColorKey];
+    if (!textColor)
+    {
+        [m_properties removeObjectForKey:BBLabelStyleTextColorKey];
+    }
+    else
+    {
+        [m_properties setObject:textColor forKey:BBLabelStyleTextColorKey];
+    }
 }
 
 -(UITextAlignment)textAlignment
