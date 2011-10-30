@@ -1,0 +1,42 @@
+BBCloudController is a basic class for controlling a UIDocument in the cloud.
+
+The UIDocument class is abstract so your first job is to create a class inheriting from UIDocument. I use MyDocument in the example below.
+
+Refer to http://developer.apple.com/library/ios/#documentation/DataManagement/Conceptual/DocumentBasedAppPGiOS/CreateCustomDocument/CreateCustomDocument.html for more information.
+
+Usage:
+
+-(BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{
+	// ensures that iCloud storage is available
+	if ([BBCloudController isSupported])
+	{
+		// create a cloud controller for controlling a MyDocument named "note.txt"
+		m_cloudController = [[BBCloudController alloc] initWithDocumentClass:[MyDocument class] filename:@"note.txt"];
+		
+		m_cloudController.delegate = self;
+		
+		// look for note.txt in the ubiquitous container (i.e. in the cloud). If it can't be found, create it locally and move it there.
+		[m_cloudController openOrCreateDocument];
+	}	
+}
+
+-(void)cloudController:(BBCloudController *)controller documentDidBecomeReady:(UIDocument*)document
+{
+	// Classes deriving from UIDocument typically have a delegate. You should hook up to up here.
+	((MyDocument*)document).delegate = self;
+}
+
+-(void)someMethod
+{
+	// When you want to fiddle with the document...
+	MyDocument* document = (BBTvForecastDocument*)m_cloudController.document;
+	
+	[document makeSomeChange];
+	
+	// update the change count to let the framework know that it should push the changes to the cloud.
+	[document updateChangeCount:UIDocumentChangeDone];
+}
+
+That's it. When a conflict occurs, the controller will silently take the latest version. When the document is changed anywhere, your UIDocument 
+class will have load method called.
