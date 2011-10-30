@@ -6,7 +6,13 @@
 //
 
 #import "BBCloudController.h"
-#import "BBFileSystemUtilities.h"
+
+NSString* BBCachesDirectory();
+
+NSString* BBCachesDirectory()
+{
+    return [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+}
 
 @interface BBCloudController ()
 +(NSURL*)ubiquitousContainerURL;
