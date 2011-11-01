@@ -8,7 +8,7 @@ Usage:
 
 -(BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-	// ensures that iCloud storage is available
+	// ensures that iCloud storage is available. This method is safe to call on pre iOS 5 devices.
 	if ([BBCloudController isSupported])
 	{
 		// create a cloud controller for controlling a MyDocument named "note.txt"
@@ -21,21 +21,47 @@ Usage:
 	}	
 }
 
--(void)cloudController:(BBCloudController *)controller documentDidBecomeReady:(UIDocument*)document
+-(void)applicationDidBecomeActive:(UIApplication *)application
 {
-	// Classes deriving from UIDocument typically have a delegate. You should hook up to up here.
-	((MyDocument*)document).delegate = self;
+	// this can change if the user switched away from the app and disabled iCloud from the settings app.
+    if (![BBCloudController isSupported])
+    {
+        [m_cloudController closeDocument];
+    }
+	// indicates that the document is not in its normal state and nor is it being opened, created or closed.
+    else if (![m_cloudController isDocumentNormal] && ![m_cloudController isBusy])
+    {
+		// so try and open it
+        [m_cloudController openOrCreateDocument];
+    }
 }
 
--(void)someMethod
+-(void)cloudControllerDidOpenDocument:(BBCloudController*)document success:(BOOL)success
 {
-	// When you want to fiddle with the document...
-	MyDocument* document = (BBTvForecastDocument*)m_cloudController.document;
+	if (success)
+	{
+		// Classes deriving from UIDocument typically have a delegate. You should hook up to up here.
+		((MyDocument*)document).delegate = self;
+	}
+}
+
+-(void)updateDataInCloud
+{
+	if ([m_cloudController isDocumentNormal])
+	{
+		// When you want to fiddle with the document...
+		MyDocument* document = (BBTvForecastDocument*)m_cloudController.document;
 	
-	[document makeSomeChange];
+		// Assumes that changeDidOccur returns YES when makeSomeChange did, in fact, make something change.
+		BOOL changeDidOccur = [document makeSomeChange];
 	
-	// update the change count to let the framework know that it should push the changes to the cloud.
-	[document updateChangeCount:UIDocumentChangeDone];
+		// don't update the change count unnecessarily.
+		if (changeDidOccur)
+		{
+			// update the change count to let the framework know that it should push the changes to the cloud.
+			[document updateChangeCount:UIDocumentChangeDone];
+		}
+	}
 }
 
 That's it. When a conflict occurs, the controller will silently take the latest version. When the document is changed anywhere, your UIDocument 

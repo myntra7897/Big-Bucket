@@ -6,13 +6,7 @@
 //
 
 #import "BBCloudController.h"
-
-NSString* BBCachesDirectory();
-
-NSString* BBCachesDirectory()
-{
-    return [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-}
+#import "BBFileSystemUtilities.h"
 
 @interface BBCloudController ()
 +(NSURL*)ubiquitousContainerURL;
@@ -27,6 +21,11 @@ NSString* BBCachesDirectory()
 
 +(NSURL*)ubiquitousContainerURL
 {
+    if (![[NSFileManager defaultManager] respondsToSelector:@selector(URLForUbiquityContainerIdentifier:)])
+    {
+        return nil;
+    }
+    
     return [[NSFileManager defaultManager] URLForUbiquityContainerIdentifier:nil];
 }
 
@@ -60,7 +59,7 @@ NSString* BBCachesDirectory()
 
 -(BOOL)openOrCreateDocument
 {
-    if (m_isOpeningOrCreatingDocument)
+    if ([self isBusy])
     {
         return NO;
     }
@@ -70,7 +69,7 @@ NSString* BBCachesDirectory()
         return NO;
     }
         
-    m_query = [[NSMetadataQuery alloc] init];    
+    m_query = [[NSMetadataQuery alloc] init];
     
     [[NSNotificationCenter defaultCenter] addObserver:self 
                                              selector:@selector(queryDidFinish:)
@@ -80,12 +79,25 @@ NSString* BBCachesDirectory()
     [m_query setSearchScopes:[NSArray arrayWithObject:NSMetadataQueryUbiquitousDataScope]];
         
     [m_query setPredicate:[NSPredicate predicateWithFormat:@"%K == %@", NSMetadataItemFSNameKey, m_filename]];
-    
+        
     [m_query startQuery];
     
-    m_isOpeningOrCreatingDocument = YES;
+    m_isOpeningOrCreatingDocument = YES;    
     
     return YES;
+}
+
+-(void)closeDocument
+{
+    if ([self isDocumentOpen])
+    {
+        m_isClosingDocument = YES;
+        
+        [m_document closeWithCompletionHandler:^(BOOL success) {
+            m_isClosingDocument = NO;
+            [self.delegate cloudControllerDidCloseDocument:self success:success];
+        }];
+    }
 }
 
 -(BOOL)isDocumentOpen
@@ -95,12 +107,12 @@ NSString* BBCachesDirectory()
 
 -(BOOL)isDocumentNormal
 {
-    return m_document && ((m_document.documentState & UIDocumentStateNormal) == UIDocumentStateNormal);
+    return m_document && (m_document.documentState == UIDocumentStateNormal);
 }
 
--(BOOL)isOpeningOrCreatingDocument
+-(BOOL)isBusy
 {
-    return m_isOpeningOrCreatingDocument;
+    return m_isOpeningOrCreatingDocument || m_isClosingDocument;
 }
 
 #pragma mark - Private
@@ -141,14 +153,7 @@ NSString* BBCachesDirectory()
         // already ubiquitous, just open it.
         [m_document openWithCompletionHandler:^(BOOL success)
         {
-            if (success)
-            {
-                [self.delegate cloudController:self documentDidOpen:m_document];
-            }
-            else
-            {
-                [self.delegate cloudController:self documentFailedToOpen:m_document];
-            }
+            [self.delegate cloudControllerDidOpenDocument:self success:success];
         }];
         
         m_isOpeningOrCreatingDocument = NO;
@@ -175,14 +180,7 @@ NSString* BBCachesDirectory()
                     
                 m_isOpeningOrCreatingDocument = NO;                    
                     
-                if (!error)
-                {
-                    [self.delegate cloudController:self documentDidOpen:m_document];
-                }
-                else
-                {
-                    [self.delegate cloudController:self documentFailedToOpen:m_document];
-                }
+                [self.delegate cloudControllerDidOpenDocument:self success:error == nil];
             });
         }];
     }
@@ -224,7 +222,7 @@ NSString* BBCachesDirectory()
     }
     else if ((state & UIDocumentStateSavingError) && ((state & UIDocumentStateEditingDisabled) == 0))
     {
-        [self.delegate cloudController:self documentFailedToSave:m_document];
+        [self.delegate cloudControllerDidFailToSaveDocument:self];
     }
 }
 

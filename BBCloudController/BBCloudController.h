@@ -18,6 +18,7 @@
     NSString* m_filename;
     id m_delegate;
     BOOL m_isOpeningOrCreatingDocument;
+    BOOL m_isClosingDocument;
 }
 
 // Returns YES if iCloud storage is available.
@@ -29,8 +30,11 @@
 
 // Asynchronously attempts to locate the document in the ubiquitous container. If the document cannot be found, one
 // will be created in the cache directory and then moved to the ubiquitous container. Returns NO if iCloud storage
-// is unavailable or if an openOrCreateDocument operation is already in progress. Returns YES otherwise.
+// is unavailable or if the controller is currently in the process of opening, creating or closing the document. 
+// Returns YES otherwise.
 -(BOOL)openOrCreateDocument;
+
+-(void)closeDocument;
 
 // Returns YES if the document is open.
 -(BOOL)isDocumentOpen;
@@ -38,8 +42,8 @@
 // Returns YES if the document is normal (documentState is UIDocumentStateNormal).
 -(BOOL)isDocumentNormal;
 
-// Returns YES if the controller is currently in the process of opening or creating the document.
--(BOOL)isOpeningOrCreatingDocument;
+// Returns YES if the controller is currently in the process of opening, creating or closing the document.
+-(BOOL)isBusy;
 
 @property(nonatomic,readonly) UIDocument* document;
 
@@ -50,12 +54,12 @@
 @protocol BBCloudControllerDelegate
 
 // Called when the document is successfully opened.
--(void)cloudController:(BBCloudController*)controller documentDidOpen:(UIDocument*)document;
+-(void)cloudControllerDidOpenDocument:(BBCloudController*)document success:(BOOL)success;
 
-// Called if the document could not be successfully opened.
--(void)cloudController:(BBCloudController*)controller documentFailedToOpen:(UIDocument*)document;
+// Called when the document is closed.
+-(void)cloudControllerDidCloseDocument:(BBCloudController*)controller success:(BOOL)success;
 
 // Called when the document encounters a saving error.
--(void)cloudController:(BBCloudController*)controller documentFailedToSave:(UIDocument*)document;
+-(void)cloudControllerDidFailToSaveDocument:(BBCloudController*)controller;
 
 @end
