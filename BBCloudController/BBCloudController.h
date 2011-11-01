@@ -53,8 +53,8 @@
 
 @protocol BBCloudControllerDelegate
 
-// Called when the document is successfully opened.
--(void)cloudControllerDidOpenDocument:(BBCloudController*)document success:(BOOL)success;
+// Called when the document is opened.
+-(void)cloudControllerDidOpenDocument:(BBCloudController*)controller success:(BOOL)success;
 
 // Called when the document is closed.
 -(void)cloudControllerDidCloseDocument:(BBCloudController*)controller success:(BOOL)success;
