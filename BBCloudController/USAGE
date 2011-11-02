@@ -29,7 +29,7 @@ Usage:
         [m_cloudController closeDocument];
     }
 	// indicates that the document is not in its normal state and nor is it being opened, created or closed.
-    else if (![m_cloudController isDocumentNormal] && ![m_cloudController isBusy])
+    else if (![m_cloudController isDocumentNormalOrBusy] && ![m_cloudController isOpeningOrClosing])
     {
 		// so try and open it
         [m_cloudController openOrCreateDocument];

@@ -39,11 +39,11 @@
 // Returns YES if the document is open.
 -(BOOL)isDocumentOpen;
 
-// Returns YES if the document is normal (documentState is UIDocumentStateNormal).
--(BOOL)isDocumentNormal;
+// Returns YES if the document state is normal (UIDocumentStateNormal) or busy (UIDocumentStateEditingDisabled).
+-(BOOL)isDocumentNormalOrBusy;
 
 // Returns YES if the controller is currently in the process of opening, creating or closing the document.
--(BOOL)isBusy;
+-(BOOL)isOpeningOrClosing;
 
 @property(nonatomic,readonly) UIDocument* document;
 

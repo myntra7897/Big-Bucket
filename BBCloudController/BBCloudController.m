@@ -58,7 +58,7 @@
 
 -(BOOL)openOrCreateDocument
 {
-    if ([self isBusy])
+    if ([self isOpeningOrClosing])
     {
         return NO;
     }
@@ -81,7 +81,7 @@
         
     [m_query startQuery];
     
-    m_isOpeningOrCreatingDocument = YES;    
+    m_isOpeningOrCreatingDocument = YES;
     
     return YES;
 }
@@ -104,12 +104,15 @@
     return m_document && (m_document.documentState & UIDocumentStateClosed) == 0;
 }
 
--(BOOL)isDocumentNormal
+-(BOOL)isDocumentNormalOrBusy
 {
-    return m_document && (m_document.documentState == UIDocumentStateNormal);
+    BOOL isNormal = (m_document.documentState == UIDocumentStateNormal);
+    BOOL isBusy = (m_document.documentState == UIDocumentStateEditingDisabled);
+    
+    return m_document && (isNormal || isBusy);
 }
 
--(BOOL)isBusy
+-(BOOL)isOpeningOrClosing
 {
     return m_isOpeningOrCreatingDocument || m_isClosingDocument;
 }
@@ -179,7 +182,7 @@
                                                destinationURL:ubiquitousUrl
                                                         error:&error];
                     
-                m_isOpeningOrCreatingDocument = NO;                    
+                m_isOpeningOrCreatingDocument = NO;
                 
                 dispatch_sync(dispatch_get_main_queue(), ^{
                     [self.delegate cloudControllerDidOpenDocument:self success:error == nil];
