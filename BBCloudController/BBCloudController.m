@@ -6,7 +6,6 @@
 //
 
 #import "BBCloudController.h"
-#import "BBFileSystemUtilities.h"
 
 @interface BBCloudController ()
 +(NSURL*)ubiquitousContainerURL;
@@ -134,7 +133,10 @@
     } 
     else
     {
-        url = [NSURL fileURLWithPath:[BBCachesDirectory() stringByAppendingPathComponent:m_filename]];
+        NSString* cacheDirectory = 
+            [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+        
+        url = [NSURL fileURLWithPath:[cacheDirectory stringByAppendingPathComponent:m_filename]];
     }
     
     [m_query release];
