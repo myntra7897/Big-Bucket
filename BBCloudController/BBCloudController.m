@@ -69,7 +69,7 @@
         return NO;
     }
         
-    m_query = [[NSMetadataQuery alloc] init];
+    m_query = [[NSClassFromString(@"NSMetadataQuery") alloc] init];
     
     [[NSNotificationCenter defaultCenter] addObserver:self 
                                              selector:@selector(queryDidFinish:)
@@ -153,10 +153,9 @@
         // already ubiquitous, just open it.
         [m_document openWithCompletionHandler:^(BOOL success)
         {
+            m_isOpeningOrCreatingDocument = NO;            
             [self.delegate cloudControllerDidOpenDocument:self success:success];
-        }];
-        
-        m_isOpeningOrCreatingDocument = NO;
+        }];    
     }
     else
     {
@@ -179,8 +178,10 @@
                                                         error:&error];
                     
                 m_isOpeningOrCreatingDocument = NO;                    
-                    
-                [self.delegate cloudControllerDidOpenDocument:self success:error == nil];
+                
+                dispatch_sync(dispatch_get_main_queue(), ^{
+                    [self.delegate cloudControllerDidOpenDocument:self success:error == nil];
+                });
             });
         }];
     }
