@@ -8,7 +8,7 @@
 #import "BBCloudController.h"
 
 @interface BBCloudController ()
-+(NSURL*)ubiquitousContainerURL;
++(NSURL*)ubiquitousContainerURL:(NSString*)containerID;
 -(void)resolveConflictWithConflictVersion:(NSFileVersion*)fileVersion;
 -(void)resolveConflictWithCurrentVersion;
 @end
@@ -18,7 +18,7 @@
 @synthesize delegate=m_delegate;
 @synthesize document=m_document;
 
-+(NSURL*)ubiquitousContainerURL
++(NSURL*)ubiquitousContainerURL:(NSString*)containerID
 {
     if (![[NSFileManager defaultManager] respondsToSelector:@selector(URLForUbiquityContainerIdentifier:)])
     {
@@ -28,7 +28,7 @@
     return [[NSFileManager defaultManager] URLForUbiquityContainerIdentifier:nil];
 }
 
--(id)initWithDocumentClass:(Class)documentClass filename:(NSString*)filename;
+-(id)initWithDocumentClass:(Class)documentClass filename:(NSString*)filename containerID:(NSString*)containerID
 {
     if (!(self = [super init]))
     {
@@ -38,22 +38,25 @@
     NSAssert([documentClass isSubclassOfClass:[UIDocument class]], @"Expected a subclass of UIDocument");
     
     m_documentClass = documentClass;
-        
+    
     m_filename = [filename copy];
-            
+    
+    m_containerID = [containerID copy];
+    
     return self;
 }
 
 -(void)dealloc
 {
     [m_filename release];
+    [m_containerID release];
     
     [super dealloc];
 }
 
 +(BOOL)isSupported
 {
-    return [BBCloudController ubiquitousContainerURL] != nil;
+    return [BBCloudController ubiquitousContainerURL:nil] != nil;
 }
 
 -(BOOL)openOrCreateDocument
@@ -63,7 +66,7 @@
         return NO;
     }
     
-    if ([BBCloudController ubiquitousContainerURL] == nil)
+    if ([BBCloudController ubiquitousContainerURL:m_containerID] == nil)
     {
         return NO;
     }
@@ -172,7 +175,7 @@
             NSAssert1(success, @"Error creating file: %@", url);
 
             NSURL* ubiquitousUrl = 
-                [[BBCloudController ubiquitousContainerURL] URLByAppendingPathComponent:m_filename];
+                [[BBCloudController ubiquitousContainerURL:m_containerID] URLByAppendingPathComponent:m_filename];
                     
             // asynchronously move the document to the ubiquity container.
             dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{                          

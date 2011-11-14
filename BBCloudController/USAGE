@@ -12,7 +12,7 @@ Usage:
 	if ([BBCloudController isSupported])
 	{
 		// create a cloud controller for controlling a MyDocument named "note.txt"
-		m_cloudController = [[BBCloudController alloc] initWithDocumentClass:[MyDocument class] filename:@"note.txt"];
+		m_cloudController = [[BBCloudController alloc] initWithDocumentClass:[MyDocument class] filename:@"note.txt" containerID:nil];
 		
 		m_cloudController.delegate = self;
 		

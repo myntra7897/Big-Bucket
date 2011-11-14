@@ -16,6 +16,7 @@
     NSMetadataQuery* m_query;
     UIDocument* m_document;
     NSString* m_filename;
+    NSString* m_containerID;
     id m_delegate;
     BOOL m_isOpeningOrCreatingDocument;
     BOOL m_isClosingDocument;
@@ -25,8 +26,8 @@
 +(BOOL)isSupported;
 
 // Creates and initializes a BBCloudController that controls a document of the specified type, with the specified
-// filename.
--(id)initWithDocumentClass:(Class)documentClass filename:(NSString*)filename;
+// filename. 
+-(id)initWithDocumentClass:(Class)documentClass filename:(NSString*)filename containerID:(NSString*)containerID;
 
 // Asynchronously attempts to locate the document in the ubiquitous container. If the document cannot be found, one
 // will be created in the cache directory and then moved to the ubiquitous container. Returns NO if iCloud storage
